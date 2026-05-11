@@ -1,0 +1,78 @@
+company,group_member,sector,sub_sector,disclosure,confirmed_pricing,loyalty,public,size_bucket,revenue_b,notes
+Bloomingdale's,arjun,retail,general_merchandise,FALSE,FALSE,TRUE,TRUE,Large,2.8,
+eBay,arjun,retail,general_merchandise,FALSE,FALSE,FALSE,TRUE,Very Large,10.3,personalized coupons not pricing
+Etsy,arjun,retail,general_merchandise,FALSE,FALSE,FALSE,TRUE,Large,2.8,personalized coupons not pricing
+Macy's,arjun,retail,general_merchandise,FALSE,FALSE,TRUE,TRUE,Very Large,23,
+Saks Fifth Avenue,arjun,retail,general_merchandise,FALSE,TRUE,TRUE,FALSE,Very Large,6,privacy policy admits price/service differences for loyalty members
+Best Buy,arjun,retail,specialty,FALSE,FALSE,TRUE,TRUE,Very Large,41,
+Chewy,arjun,retail,specialty,FALSE,FALSE,TRUE,TRUE,Very Large,11,
+Nike,arjun,retail,specialty,FALSE,FALSE,TRUE,TRUE,Very Large,43.6,customer service explicitly denies algorithmic pricing
+Samsung,arjun,retail,specialty,FALSE,FALSE,TRUE,TRUE,Very Large,234,
+Sephora,arjun,retail,specialty,FALSE,FALSE,TRUE,TRUE,Very Large,20,revenue imputed from LVMH segment estimate
+Ulta,arjun,retail,specialty,FALSE,FALSE,TRUE,TRUE,Very Large,12.4,
+Walgreens,arjun,retail,specialty,FALSE,FALSE,TRUE,TRUE,Very Large,154.5,loyalty discounts; flagged by both Arjun and Ruoming
+Wayfair,arjun,retail,specialty,FALSE,TRUE,TRUE,TRUE,Very Large,12.5,
+Priceline,arjun,retail,travel,FALSE,FALSE,TRUE,TRUE,Very Large,29.6,
+New York Times,arjun,media,news,TRUE,TRUE,FALSE,TRUE,Large,2.7,only confirmed compliant in retail/media
+The Economist,arjun,media,news,FALSE,TRUE,FALSE,FALSE,Mid-Size,0.45,confirmed geographic price personalization Toronto vs NYC
+The New Yorker,arjun,media,news,FALSE,FALSE,FALSE,FALSE,Mid-Size,0.279,
+Wall Street Journal,arjun,media,news,FALSE,FALSE,FALSE,TRUE,Large,0.5,
+Delta Air Lines,era,travel,airlines,FALSE,TRUE,TRUE,TRUE,Very Large,63.4,
+United Airlines,era,travel,airlines,FALSE,TRUE,TRUE,TRUE,Very Large,59.07,
+Southwest Airlines,era,travel,airlines,FALSE,TRUE,TRUE,TRUE,Large,7.25,
+Frontier Airlines,era,travel,airlines,FALSE,TRUE,TRUE,TRUE,Mid-Size,3.724,
+Marriott,era,travel,hotels,FALSE,FALSE,TRUE,TRUE,Very Large,29.16,
+Hilton,era,travel,hotels,FALSE,FALSE,TRUE,TRUE,Very Large,12.04,
+Airbnb,era,travel,hotels,FALSE,TRUE,FALSE,TRUE,Very Large,12.24,confirmed differential pricing for same listing per Era's screenshot
+Booking.com,era,travel,hotels,FALSE,FALSE,TRUE,TRUE,Very Large,26.92,review needed - Era flagged
+Sonesta,era,travel,hotels,FALSE,FALSE,TRUE,FALSE,Large,0.25,
+Vacasa,era,travel,hotels,FALSE,FALSE,FALSE,FALSE,Large,0.9105,
+Uber,era,travel,rideshare,TRUE,TRUE,TRUE,TRUE,Very Large,52,disclosure shown in Era's slide screenshot
+Lyft,era,travel,rideshare,TRUE,TRUE,TRUE,TRUE,Very Large,6.3,disclosure shown in Era's slide screenshot
+Hertz,era,travel,carrental,FALSE,FALSE,TRUE,TRUE,Very Large,8.5,
+Enterprise,era,travel,carrental,FALSE,FALSE,TRUE,FALSE,Very Large,52.6,
+Turo,era,travel,carrental,FALSE,FALSE,FALSE,FALSE,Mid-Size,0.95,
+Carvana,era,travel,carrental,FALSE,TRUE,FALSE,TRUE,Small,6.4,comment in FTC
+Amtrak,era,travel,transit,FALSE,FALSE,TRUE,TRUE,Large,3.9,quasi-public; coded as public=1
+Avis,era,travel,carrental,FALSE,FALSE,TRUE,TRUE,Very Large,11.65,
+Sixt,era,travel,carrental,FALSE,TRUE,TRUE,TRUE,Large,5,european based; algo pricing per Era's sheet but no disclosure
+Alamo,era,travel,carrental,FALSE,FALSE,TRUE,FALSE,Very Large,0.42,
+Outdoorsy,era,travel,carrental,FALSE,FALSE,FALSE,FALSE,Small,0.0282,
+DoorDash,ruoming,food,food_delivery,TRUE,TRUE,TRUE,TRUE,Very Large,13.72,disclosure modal triggers on NY location
+Grubhub,ruoming,food,food_delivery,TRUE,TRUE,TRUE,TRUE,Very Large,2.34,
+Uber Eats,ruoming,food,food_delivery,TRUE,TRUE,TRUE,TRUE,Very Large,15,
+Instacart,ruoming,food,food_delivery,TRUE,TRUE,TRUE,TRUE,Very Large,3.74,
+Amazon Fresh,ruoming,food,food_delivery,TRUE,TRUE,FALSE,TRUE,Very Large,125,allegedly per reddit; revenue not broken out from Amazon
+GoPuff,ruoming,food,food_delivery,FALSE,FALSE,TRUE,FALSE,Large,2.4,high likelihood per privacy policy
+Misfits Market,ruoming,food,food_delivery,FALSE,FALSE,TRUE,FALSE,Mid-Size,0.5,
+Hungryroot,ruoming,food,meal_box,FALSE,FALSE,FALSE,FALSE,Mid-Size,0.7,
+Target,ruoming,food,grocery,TRUE,TRUE,TRUE,TRUE,Very Large,104.78,disclosure inconspicuous in tooltip
+FreshDirect,ruoming,food,grocery,FALSE,TRUE,TRUE,FALSE,Mid-Size,0.77,validated personalized pricing - likely violator
+Whole Foods,ruoming,food,grocery,FALSE,FALSE,TRUE,TRUE,Very Large,22.6,
+Walmart,ruoming,food,grocery,FALSE,FALSE,TRUE,TRUE,Very Large,680.95,
+Wegmans,ruoming,food,grocery,FALSE,FALSE,TRUE,FALSE,Very Large,14.5,high likelihood per loyalty terms
+Acme Markets,ruoming,food,grocery,FALSE,FALSE,TRUE,TRUE,Large,0.1965,high likelihood per loyalty
+Lidl,ruoming,food,grocery,FALSE,TRUE,TRUE,FALSE,Very Large,15.8,validated personalized pricing - likely violator
+Aldi,ruoming,food,grocery,TRUE,TRUE,FALSE,FALSE,Very Large,150,inconspicuous disclosure in fee popup
+Weee,ruoming,food,grocery,FALSE,TRUE,TRUE,FALSE,Mid-Size,1,validated
+CVS,ruoming,pharmacy,pharmacy,FALSE,FALSE,TRUE,TRUE,Very Large,402.1,personalized rewards coupons
+ShopRite,ruoming,food,grocery,FALSE,TRUE,TRUE,FALSE,Large,15.4,validated personalized pricing - likely violator
+Thrive Market,ruoming,food,grocery,FALSE,FALSE,FALSE,FALSE,Mid-Size,0.7,
+HelloFresh,ruoming,food,meal_box,TRUE,TRUE,FALSE,TRUE,Large,7.9,validated
+Blue Apron,ruoming,food,meal_box,FALSE,FALSE,TRUE,FALSE,Mid-Size,0.4,
+Mercato,ruoming,food,grocery,FALSE,TRUE,TRUE,FALSE,Mid-Size,0.03,validated personalized pricing - likely violator
+Amazon,yhara,ecommerce,marketplace,FALSE,TRUE,TRUE,TRUE,Very Large,716.3,Yhara sheet incomplete; verify
+Starbucks,yhara,foodbev,quick_service,FALSE,FALSE,TRUE,TRUE,Very Large,37.2,
+McDonald's,yhara,foodbev,quick_service,FALSE,FALSE,TRUE,TRUE,Very Large,26.89,
+Asos,yhara,fashion,online_fashion,FALSE,FALSE,FALSE,TRUE,Mid-Size,3.32,
+H&M,yhara,fashion,fashion_retail,FALSE,TRUE,TRUE,TRUE,Very Large,23,personalized pricing for discounts per Yhara
+Ticketmaster,yhara,ticketing,ticketing,FALSE,TRUE,TRUE,TRUE,Large,3.1,
+StubHub,yhara,ticketing,ticketing,FALSE,FALSE,FALSE,TRUE,Mid-Size,1.75,
+SeatGeek,yhara,ticketing,ticketing,FALSE,FALSE,FALSE,FALSE,Mid-Size,0.1841,
+GameTime,yhara,ticketing,ticketing,FALSE,FALSE,FALSE,FALSE,Small,0.5,
+Telecharge,yhara,ticketing,ticketing,FALSE,FALSE,FALSE,FALSE,Small,0.005,
+TodayTix,yhara,ticketing,ticketing,FALSE,FALSE,FALSE,FALSE,Small,0.0498,
+Paciolan,yhara,ticketing,ticketing,FALSE,FALSE,FALSE,FALSE,Small,0.06,
+TickPick,yhara,ticketing,ticketing,FALSE,FALSE,FALSE,FALSE,Small,0.0478,
+Vivid Seats,yhara,ticketing,ticketing,FALSE,FALSE,FALSE,TRUE,Mid-Size,0.57,
+Sony PlayStation,yhara,ecommerce,gaming,FALSE,TRUE,FALSE,TRUE,Very Large,76.5,Yhara flagged as yes on personalized pricing
