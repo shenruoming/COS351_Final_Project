@@ -1,0 +1,25 @@
+Company,Sector,Disclosure,Personalized_Pricing,Violation_Risk,Public,Revenue_B,Loyalty_Program,Num_Customers_Monthly_M,Num_Customers_Weekly_M
+DoorDash,Food delivery,Yes,Yes,0,Public,13.72,Yes,42,10.5
+Grubhub,Food delivery,Yes,Yes,0,Public,2.13,Yes,24.6,6.15
+Ubereats,Food delivery,Yes,Yes,0,Public,13.7,Yes,95,23.75
+Instacart,Food delivery,Yes,Yes,0,Public,3.7,Yes,14.4,25
+Amazon Fresh,Grocery delivery,No,Yes,4,Public,125,Yes,12.5,150
+GoPuff,Grocery delivery,No,No,3,Private,1.2,Yes,1.8,1.8
+Misfits Market,Grocery delivery,No,No,2,Private,0.5,Yes,0.5,0.5
+Hungryroot,Meal box delivery,No,No,3,Private,0.7,No,1.5,1.5
+Target,Grocery delivery,Yes,Yes,0,Public,106,Yes,120,142
+FreshDirect,Grocery delivery,No,Yes,4,Private,0.77,Yes,0.25,0.25
+Whole Foods,Grocery delivery,No,No,0,Public,77,Yes,17.44,28
+Walmart,Grocery delivery,No,Yes,4,Public,681,Yes,190,255
+Wegmans,Grocery delivery,No,No,3,Private,13.1,Yes,4.5,5.7
+Acme Markets,Grocery delivery,No,No,3,Public,20,Yes,13,34
+Lidl,Grocery delivery,No,Yes,4,Private,130,Yes,100,100
+Aldi,Grocery delivery,Yes,Yes,0,Private,150,No,40,50
+Weee,Grocery delivery,No,Yes,4,Private,1,Yes,1,1.6
+CVS,Pharmacy,No,No,3,Public,402,Yes,165,185
+Walgreens,Pharmacy,No,No,3,Public,147,Yes,56,110
+ShopRite,Grocery delivery,No,Yes,4,Private,20.7,Yes,8,
+Thrive Market,Grocery delivery,No,No,1,Private,0.7,No,1.4,
+Hello Fresh,Meal box delivery,No,Yes,4,Public,8,No,7,
+Blue Apron,Meal box delivery,No,No,1,Private,0.42,Yes,0.267,
+Mercato,Grocery delivery,No,Yes,4,Private,0.03,Yes,0.02,
