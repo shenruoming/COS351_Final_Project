@@ -1,0 +1,286 @@
+import os, re
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+PP_KEYWORDS = {
+    "personalized pricing": 5,
+    "algorithmic pricing": 5,
+    "price discrimination": 5,
+    "price optimization": 5,
+    "dynamic pricing": 5,
+    "surge pricing": 5,
+    "variable pricing": 5,
+    "behavioral data": 3,
+    "purchase history": 3,
+    "browsing history": 3,
+    "user profile": 3,
+    "machine learning": 3,
+    "profiling": 3,
+    "automated decision": 3,
+    "transaction data": 3,
+    "personalized offers": 3,
+    "segment": 3,
+    "personalized": 1,
+    "tailored": 1,
+    "preferences": 1,
+    "personal data": 1,
+    "personal information": 1,
+    "collect": 1,
+}
+
+HIGH_WEIGHT = [k for k, v in PP_KEYWORDS.items() if v == 5]
+MEDIUM_WEIGHT = [k for k, v in PP_KEYWORDS.items() if v == 3]
+LOW_WEIGHT = [k for k, v in PP_KEYWORDS.items() if v == 1]
+
+COMPANY_META = {
+    "DoorDash":           {"confirmed_pricing": True,  "disclosure": True,  "sector": "Food Delivery"},
+    "Grubhub":            {"confirmed_pricing": True,  "disclosure": True,  "sector": "Food Delivery"},
+    "Uber_Eats":          {"confirmed_pricing": True,  "disclosure": True,  "sector": "Food Delivery"},
+    "Instacart":          {"confirmed_pricing": True,  "disclosure": True,  "sector": "Food Delivery"},
+    "Amazon_Fresh":       {"confirmed_pricing": True,  "disclosure": False, "sector": "Food Delivery"},
+    "GoPuff":             {"confirmed_pricing": True,  "disclosure": False, "sector": "Food Delivery"},
+    "Misfits_Market":     {"confirmed_pricing": False, "disclosure": False, "sector": "Food Delivery"},
+    "Hungryroot":         {"confirmed_pricing": False, "disclosure": False, "sector": "Meal Box Delivery"},
+    "Target":             {"confirmed_pricing": True,  "disclosure": True,  "sector": "Grocery Delivery"},
+    "FreshDirect":        {"confirmed_pricing": True,  "disclosure": False, "sector": "Grocery Delivery"},
+    "Whole_Foods":        {"confirmed_pricing": False, "disclosure": False, "sector": "Grocery"},
+    "Walmart":            {"confirmed_pricing": False, "disclosure": False, "sector": "Grocery"},
+    "Wegmans":            {"confirmed_pricing": True,  "disclosure": False, "sector": "Grocery"},
+    "Acme_Markets":       {"confirmed_pricing": True,  "disclosure": False, "sector": "Grocery"},
+    "ACME":               {"confirmed_pricing": True,  "disclosure": False, "sector": "Grocery"},
+    "Lidl":               {"confirmed_pricing": True,  "disclosure": False, "sector": "Grocery"},
+    "Aldi":               {"confirmed_pricing": True,  "disclosure": True,  "sector": "Grocery"},
+    "Weee":               {"confirmed_pricing": True,  "disclosure": False, "sector": "Grocery"},
+    "CVS":                {"confirmed_pricing": False, "disclosure": False, "sector": "Pharmacy"},
+    "Walgreens":          {"confirmed_pricing": False, "disclosure": False, "sector": "Pharmacy"},
+    "ShopRite":           {"confirmed_pricing": True,  "disclosure": False, "sector": "Grocery"},
+    "Thrive_Market":      {"confirmed_pricing": False, "disclosure": False, "sector": "Grocery"},
+    "HelloFresh":         {"confirmed_pricing": True,  "disclosure": False, "sector": "Meal Box Delivery"},
+    "Blue_Apron":         {"confirmed_pricing": False, "disclosure": False, "sector": "Meal Box Delivery"},
+    "Mercato":            {"confirmed_pricing": True,  "disclosure": False, "sector": "Grocery"},
+    "Amazon":             {"confirmed_pricing": True,  "disclosure": False, "sector": "E-Commerce"},
+    "Starbucks":          {"confirmed_pricing": False, "disclosure": False, "sector": "Food & Beverage"},
+    "McDonalds":          {"confirmed_pricing": False, "disclosure": False, "sector": "Food & Beverage"},
+    "ASOS":               {"confirmed_pricing": False, "disclosure": False, "sector": "Fashion Retail"},
+    "HM":                 {"confirmed_pricing": False, "disclosure": False, "sector": "Fashion Retail"},
+    "Ticketmaster":       {"confirmed_pricing": False, "disclosure": False, "sector": "Ticketing"},
+    "StubHub":            {"confirmed_pricing": True,  "disclosure": False, "sector": "Ticketing"},
+    "SeatGeek":           {"confirmed_pricing": False, "disclosure": False, "sector": "Ticketing"},
+    "GameTime":           {"confirmed_pricing": True,  "disclosure": False, "sector": "Ticketing"},
+    "Telecharge":         {"confirmed_pricing": False, "disclosure": False, "sector": "Ticketing"},
+    "TodayTix":           {"confirmed_pricing": False, "disclosure": False, "sector": "Ticketing"},
+    "Paciolan":           {"confirmed_pricing": False, "disclosure": False, "sector": "Ticketing"},
+    "TickPick":           {"confirmed_pricing": False, "disclosure": False, "sector": "Ticketing"},
+    "Vivid_Seats":        {"confirmed_pricing": True,  "disclosure": False, "sector": "Ticketing"},
+    "PlayStation":        {"confirmed_pricing": True,  "disclosure": False, "sector": "Gaming"},
+    "Delta_Airlines":     {"confirmed_pricing": True,  "disclosure": False, "sector": "Airlines"},
+    "United_Airlines":    {"confirmed_pricing": True,  "disclosure": False, "sector": "Airlines"},
+    "Spirit_Airlines":    {"confirmed_pricing": False, "disclosure": False, "sector": "Airlines"},
+    "Frontier_Airlines":  {"confirmed_pricing": True,  "disclosure": False, "sector": "Airlines"},
+    "Marriott":           {"confirmed_pricing": False, "disclosure": False, "sector": "Hotels"},
+    "Marriot":            {"confirmed_pricing": False, "disclosure": False, "sector": "Hotels"},
+    "Hilton":             {"confirmed_pricing": False, "disclosure": False, "sector": "Hotels"},
+    "Airbnb":             {"confirmed_pricing": True,  "disclosure": False, "sector": "Hotels"},
+    "Graduate_Hotels":    {"confirmed_pricing": False, "disclosure": False, "sector": "Hotels"},
+    "Sonesta":            {"confirmed_pricing": False, "disclosure": False, "sector": "Hotels"},
+    "Sonder":             {"confirmed_pricing": False, "disclosure": False, "sector": "Hotels"},
+    "Booking_com":        {"confirmed_pricing": True,  "disclosure": False, "sector": "Hotels"},
+    "Vacasa":             {"confirmed_pricing": False, "disclosure": False, "sector": "Hotels"},
+    "Uber":               {"confirmed_pricing": True,  "disclosure": True,  "sector": "Transportation"},
+    "Lyft":               {"confirmed_pricing": True,  "disclosure": True,  "sector": "Transportation"},
+    "Hertz":              {"confirmed_pricing": False, "disclosure": False, "sector": "Transportation"},
+    "Enterprise":         {"confirmed_pricing": False, "disclosure": False, "sector": "Transportation"},
+    "Turo":               {"confirmed_pricing": False, "disclosure": False, "sector": "Transportation"},
+    "Amtrak":             {"confirmed_pricing": False, "disclosure": False, "sector": "Transportation"},
+    "Amtrack":            {"confirmed_pricing": False, "disclosure": False, "sector": "Transportation"},
+    "Avis":               {"confirmed_pricing": False, "disclosure": False, "sector": "Transportation"},
+    "Sixt":               {"confirmed_pricing": True,  "disclosure": False, "sector": "Transportation"},
+    "Alamo":              {"confirmed_pricing": False, "disclosure": False, "sector": "Transportation"},
+    "outdoorsy":          {"confirmed_pricing": False, "disclosure": False, "sector": "Transportation"},
+    "Outdoorsy":          {"confirmed_pricing": False, "disclosure": False, "sector": "Transportation"},
+    "Bloomingdales":      {"confirmed_pricing": False, "disclosure": False, "sector": "General Merchandise"},
+    "eBay":               {"confirmed_pricing": False, "disclosure": False, "sector": "General Merchandise"},
+    "Etsy":               {"confirmed_pricing": False, "disclosure": False, "sector": "General Merchandise"},
+    "Macys":              {"confirmed_pricing": True,  "disclosure": False, "sector": "General Merchandise"},
+    "Saks_Fifth_Avenue":  {"confirmed_pricing": True,  "disclosure": False, "sector": "General Merchandise"},
+    "Best_Buy":           {"confirmed_pricing": False, "disclosure": False, "sector": "Specialty Retail"},
+    "BestBuy":            {"confirmed_pricing": False, "disclosure": False, "sector": "Specialty Retail"},
+    "Chewy":              {"confirmed_pricing": False, "disclosure": False, "sector": "Specialty Retail"},
+    "Nike":               {"confirmed_pricing": False, "disclosure": False, "sector": "Specialty Retail"},
+    "Samsung":            {"confirmed_pricing": False, "disclosure": False, "sector": "Specialty Retail"},
+    "Sephora":            {"confirmed_pricing": False, "disclosure": False, "sector": "Specialty Retail"},
+    "Ulta":               {"confirmed_pricing": False, "disclosure": False, "sector": "Specialty Retail"},
+    "Wayfair":            {"confirmed_pricing": True,  "disclosure": False, "sector": "Specialty Retail"},
+    "Priceline":          {"confirmed_pricing": True,  "disclosure": False, "sector": "Travel & Events"},
+    "New_York_Times":     {"confirmed_pricing": True,  "disclosure": False, "sector": "Media"},
+    "The_Economist":      {"confirmed_pricing": False, "disclosure": False, "sector": "Media"},
+    "The_New_Yorker":     {"confirmed_pricing": False, "disclosure": False, "sector": "Media"},
+    "Wall_Street_Journal":{"confirmed_pricing": False, "disclosure": False, "sector": "Media"},
+}
+
+def analyze_policy(text):
+    text_lower = text.lower()
+    total_words = len(text_lower.split())
+    if total_words == 0:
+        return None
+    weighted_score = 0
+    counts = {}
+    for keyword, weight in PP_KEYWORDS.items():
+        pattern = r'\b' + re.escape(keyword) + r'\b'
+        count = len(re.findall(pattern, text_lower))
+        counts[keyword] = count
+        weighted_score += count * weight
+    normalized = (weighted_score / total_words) * 1000
+    return {
+        "total_words": total_words,
+        "weighted_score": round(weighted_score, 2),
+        "normalized_score": round(normalized, 4),
+        "counts": counts
+    }
+
+POLICY_FOLDER = "policy_texts"
+results = []
+
+for filename in sorted(os.listdir(POLICY_FOLDER)):
+    if not filename.endswith(".txt"):
+        continue
+    company = filename.replace(".txt", "")
+    filepath = os.path.join(POLICY_FOLDER, filename)
+    if os.path.getsize(filepath) == 0:
+        continue
+    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+        text = f.read()
+    result = analyze_policy(text)
+    if not result:
+        continue
+    meta = COMPANY_META.get(company, {"confirmed_pricing": False, "disclosure": False, "sector": "Unknown"})
+    if meta["confirmed_pricing"] and meta["disclosure"]:
+        group = "Confirmed AP + Discloses"
+    elif meta["confirmed_pricing"] and not meta["disclosure"]:
+        group = "Confirmed AP + No Disclosure"
+    else:
+        group = "No Confirmed AP"
+    row = {
+        "company": company,
+        "sector": meta["sector"],
+        "group": group,
+        "confirmed_pricing": meta["confirmed_pricing"],
+        "disclosure": meta["disclosure"],
+        "total_words": result["total_words"],
+        "weighted_score": result["weighted_score"],
+        "normalized_score": result["normalized_score"],
+    }
+    for k, v in result["counts"].items():
+        row[f"count_{k.replace(' ','_').replace('-','_')}"] = v
+    results.append(row)
+
+df = pd.DataFrame(results)
+
+print("=" * 65)
+print("  PRIVACY POLICY ANALYSIS — GROUP COMPARISON")
+print("  (raw normalized score = weighted pts per 1000 words)")
+print("=" * 65)
+group_stats = df.groupby("group")["normalized_score"].agg(["mean", "median", "std", "count"]).round(3)
+group_stats.columns = ["Mean", "Median", "Std Dev", "N Companies"]
+print(group_stats.to_string())
+
+print("\nKeyword hits by group:")
+for grp in ["Confirmed AP + Discloses", "Confirmed AP + No Disclosure", "No Confirmed AP"]:
+    subset = df[df["group"] == grp]
+    if subset.empty:
+        continue
+    print(f"\n  {grp} (n={len(subset)}):")
+    for kw in PP_KEYWORDS:
+        col = f"count_{kw.replace(' ','_').replace('-','_')}"
+        if col in subset.columns:
+            total = subset[col].sum()
+            if total > 0:
+                print(f"    '{kw}' — total hits: {int(total)}")
+
+print("\n" + "=" * 65)
+print("  KEYWORD HITS BY WEIGHT TIER AND GROUP")
+print("=" * 65)
+
+for grp in ["Confirmed AP + Discloses", "Confirmed AP + No Disclosure", "No Confirmed AP"]:
+    subset = df[df["group"] == grp]
+    if subset.empty:
+        continue
+    high_hits = sum(subset.get(f"count_{k.replace(' ','_').replace('-','_')}", pd.Series([0])).sum() for k in HIGH_WEIGHT)
+    medium_hits = sum(subset.get(f"count_{k.replace(' ','_').replace('-','_')}", pd.Series([0])).sum() for k in MEDIUM_WEIGHT)
+    low_hits = sum(subset.get(f"count_{k.replace(' ','_').replace('-','_')}", pd.Series([0])).sum() for k in LOW_WEIGHT)
+    total_hits = high_hits + medium_hits + low_hits
+    print(f"\n  {grp} (n={len(subset)} companies)")
+    print(f"  {'─'*50}")
+    print(f"  High weight terms  (x5): {int(high_hits):>5} hits")
+    print(f"  Medium weight terms(x3): {int(medium_hits):>5} hits")
+    print(f"  Low weight terms   (x1): {int(low_hits):>5} hits")
+    print(f"  Total hits:              {int(total_hits):>5}")
+    print(f"  Avg hits per company:    {total_hits/len(subset):.1f}")
+
+print("\n" + "=" * 65)
+print("  PER COMPANY KEYWORD HITS BY WEIGHT TIER")
+print("=" * 65)
+
+tier_results = []
+for _, row in df.iterrows():
+    high = sum(row.get(f"count_{k.replace(' ','_').replace('-','_')}", 0) for k in HIGH_WEIGHT)
+    medium = sum(row.get(f"count_{k.replace(' ','_').replace('-','_')}", 0) for k in MEDIUM_WEIGHT)
+    low = sum(row.get(f"count_{k.replace(' ','_').replace('-','_')}", 0) for k in LOW_WEIGHT)
+    total = high + medium + low
+    tier_results.append({
+        "company": row["company"],
+        "sector": row["sector"],
+        "group": row["group"],
+        "high_weight_hits": int(high),
+        "medium_weight_hits": int(medium),
+        "low_weight_hits": int(low),
+        "total_hits": int(total),
+        "normalized_score": row["normalized_score"],
+    })
+
+tier_df = pd.DataFrame(tier_results).sort_values("total_hits", ascending=False).reset_index(drop=True)
+print(f"\n{'Company':<28} {'Group':<32} {'High':>6} {'Med':>6} {'Low':>6} {'Total':>7} {'Score':>8}")
+print("-" * 95)
+for _, row in tier_df.iterrows():
+    print(f"  {row['company']:<26} {row['group']:<32} {row['high_weight_hits']:>6} {row['medium_weight_hits']:>6} {row['low_weight_hits']:>6} {row['total_hits']:>7} {row['normalized_score']:>8}")
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+colors = {
+    "Confirmed AP + Discloses": "#2196F3",
+    "Confirmed AP + No Disclosure": "#F44336",
+    "No Confirmed AP": "#4CAF50"
+}
+group_means = df.groupby("group")["normalized_score"].mean()
+bars = axes[0].bar(
+    range(len(group_means)),
+    group_means.values,
+    color=[colors.get(g, "gray") for g in group_means.index],
+    edgecolor="white", width=0.5)
+for bar, val in zip(bars, group_means.values):
+    axes[0].text(bar.get_x() + bar.get_width()/2,
+                 bar.get_height() + 0.1,
+                 f"{val:.2f}", ha="center", fontsize=11, fontweight="bold")
+axes[0].set_xticks(range(len(group_means)))
+axes[0].set_xticklabels(group_means.index, rotation=15, ha="right", fontsize=9)
+axes[0].set_ylabel("Avg Normalized Score (weighted pts per 1000 words)")
+axes[0].set_title("Privacy Policy Keyword Scores\nby Compliance Group", fontweight="bold")
+
+sector_avg = df.groupby("sector")["normalized_score"].mean().sort_values(ascending=True)
+axes[1].barh(sector_avg.index, sector_avg.values, color="#9C27B0", edgecolor="white")
+for i, val in enumerate(sector_avg.values):
+    axes[1].text(val + 0.05, i, f"{val:.2f}", va="center", fontsize=9)
+axes[1].set_xlabel("Avg Normalized Score (weighted pts per 1000 words)")
+axes[1].set_title("Privacy Policy Keyword Scores\nby Sector", fontweight="bold")
+
+plt.tight_layout()
+plt.savefig("privacy_policy_analysis.png", dpi=150)
+plt.show()
+
+df.to_csv("privacy_policy_scores.csv", index=False)
+tier_df.to_csv("company_tier_hits.csv", index=False)
+from google.colab import files
+files.download("privacy_policy_scores.csv")
+files.download("company_tier_hits.csv")
+files.download("privacy_policy_analysis.png")
+print("Done! Privacy policy analysis complete.")
