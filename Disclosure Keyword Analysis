@@ -1,0 +1,122 @@
+import re
+import pandas as pd
+import matplotlib.pyplot as plt
+
+DISC_KEYWORDS = {
+    # High weight (5)
+    "algorithm": 5,
+    "personal data": 5,
+    "set by an algorithm": 5,
+    "personal information": 5,
+    # Medium weight (3)
+    "delivery address": 3,
+    "location": 3,
+    "past orders": 3,
+    "purchase history": 3,
+    "randomized tests": 3,
+    "personalized incentives": 3,
+    "personalized promotions": 3,
+    "shopping history": 3,
+    "personalized savings": 3,
+    "market conditions": 3,
+    "calculate": 3,
+    "new york": 3,
+    "law": 3,
+    "discounts": 3,
+    "promotions": 3,
+    "savings": 3,
+    # Low weight (1)
+    "prices may vary": 1,
+    "fees may vary": 1,
+    "law requires": 1,
+    "disclosure": 1,
+    "personalized": 1,
+    "vary": 1,
+}
+
+MANDATORY_PHRASE = "this price was set by an algorithm using your personal data"
+
+DISCLOSURES = {
+    "DoorDash": "Delivery fee. This fee covers delivery-related costs for the restaurant and is based in part on the delivery location you provided. THIS PRICE WAS SET BY AN ALGORITHM USING YOUR PERSONAL DATA.",
+    "Instacart": "Prices may vary from those in store. New York law requires the following disclosure because certain prices and/or fees may vary based on randomized tests, we use personal information (such as delivery address) to calculate fees, and we offer certain personalized incentives: this price was set by an algorithm using your personal data.",
+    "Uber_Eats": "This price was set by an algorithm using your personal data. Your location is used to help us calculate fees and savings. Prices may be lower in store.",
+    "Grubhub": "Delivery fee varies for each restaurant based on your location and other factors. Because we use information such as your delivery address to calculate distance and fees, and your past orders and favorite stores to provide personalized promotions and/or discounts NY law requires that we make the following disclosure: This price was set by an algorithm using your personal data. Promotions or discounts that reduce delivery fees may apply.",
+    "Aldi": "Prices may vary from those in store. New York law requires the following disclosure because certain prices and/or fees may vary based on randomized tests, we use personal information (such as delivery address) to calculate fees, and we offer certain personalized incentives: this price was set by an algorithm using your personal data.",
+    "Target": "At Target, we're committed to delivering high-quality products at outstanding value. While regular prices are consistent for all guests shopping at the same store, some items may differ between locations because market conditions vary by store. Guests may also see different prices when they receive personalized savings and offers through Target Circle. To provide these benefits and ensure pricing reflects each store's market, Target uses limited information such as location and shopping history. New York state law requires businesses to display the following disclosure: This price was set by an algorithm using your personal data.",
+}
+
+def analyze_disclosure(text):
+    text_lower = text.lower()
+    total_words = len(text_lower.split())
+    weighted_score = 0
+    counts = {}
+    for keyword, weight in DISC_KEYWORDS.items():
+        pattern = r'\b' + re.escape(keyword) + r'\b'
+        count = len(re.findall(pattern, text_lower))
+        counts[keyword] = count
+        weighted_score += count * weight
+    normalized = (weighted_score / total_words) * 100
+    has_mandatory = MANDATORY_PHRASE in text_lower
+    return {
+        "total_words": total_words,
+        "weighted_score": round(weighted_score, 2),
+        "normalized_score": round(normalized, 4),
+        "counts": counts,
+        "has_mandatory_phrase": has_mandatory
+    }
+
+print("=" * 65)
+print("  DISCLOSURE STATEMENT ANALYSIS")
+print("=" * 65)
+
+disc_results = []
+for company, text in DISCLOSURES.items():
+    result = analyze_disclosure(text)
+    disc_results.append({
+        "company": company,
+        "total_words": result["total_words"],
+        "weighted_score": result["weighted_score"],
+        "normalized_score": result["normalized_score"],
+        "includes_mandatory_phrase": "YES" if result["has_mandatory_phrase"] else "NO",
+        **{f"count_{k.replace(' ','_')}": v for k, v in result["counts"].items()}
+    })
+    print(f"\n  {company} ({result['total_words']} words)")
+    print(f"  Mandatory phrase present: {'YES' if result['has_mandatory_phrase'] else 'NO'}")
+    print(f"  Weighted score: {result['weighted_score']} | Normalized: {result['normalized_score']}")
+    print(f"  Keywords found:")
+    for kw, count in result["counts"].items():
+        if count > 0:
+            print(f"    '{kw}' x{count} (weight {DISC_KEYWORDS[kw]}) = {count * DISC_KEYWORDS[kw]} pts")
+
+disc_df = pd.DataFrame(disc_results)
+
+print("\n\nFINAL DISCLOSURE SCORES (raw normalized — weighted score per 100 words):")
+print(disc_df[["company","total_words","weighted_score","normalized_score","includes_mandatory_phrase"]].sort_values("normalized_score", ascending=False).to_string(index=False))
+
+disc_df_sorted = disc_df.sort_values("normalized_score", ascending=True)
+
+fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+axes[0].barh(disc_df_sorted["company"], disc_df_sorted["total_words"],
+             color="#2196F3", edgecolor="white")
+for i, val in enumerate(disc_df_sorted["total_words"]):
+    axes[0].text(val + 0.5, i, str(val), va="center", fontsize=10)
+axes[0].set_xlabel("Word Count")
+axes[0].set_title("Disclosure Length\nby Company", fontweight="bold")
+
+axes[1].barh(disc_df_sorted["company"], disc_df_sorted["normalized_score"],
+             color="#FF9800", edgecolor="white")
+for i, val in enumerate(disc_df_sorted["normalized_score"]):
+    axes[1].text(val + 0.3, i, f"{val:.1f}", va="center", fontsize=10)
+axes[1].set_xlabel("Normalized Score (weighted pts per 100 words)")
+axes[1].set_title("Disclosure Keyword Density\nby Company", fontweight="bold")
+
+plt.suptitle("Disclosure Statement Analysis", fontweight="bold", fontsize=13)
+plt.tight_layout()
+plt.savefig("disclosure_statement_analysis.png", dpi=150)
+plt.show()
+
+disc_df.to_csv("disclosure_scores.csv", index=False)
+from google.colab import files
+files.download("disclosure_scores.csv")
+files.download("disclosure_statement_analysis.png")
+print("Done!")
