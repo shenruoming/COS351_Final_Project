@@ -1,0 +1,70 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+DISCLOSURES = {
+    "DoorDash": "Delivery fee. This fee covers delivery-related costs for the restaurant and is based in part on the delivery location you provided. THIS PRICE WAS SET BY AN ALGORITHM USING YOUR PERSONAL DATA.",
+    "Instacart": "Prices may vary from those in store. New York law requires the following disclosure because certain prices and/or fees may vary based on randomized tests, we use personal information (such as delivery address) to calculate fees, and we offer certain personalized incentives: this price was set by an algorithm using your personal data.",
+    "Uber_Eats": "This price was set by an algorithm using your personal data. Your location is used to help us calculate fees and savings. Prices may be lower in store.",
+    "Grubhub": "Delivery fee varies for each restaurant based on your location and other factors. Because we use information such as your delivery address to calculate distance and fees, and your past orders and favorite stores to provide personalized promotions and/or discounts NY law requires that we make the following disclosure: This price was set by an algorithm using your personal data. Promotions or discounts that reduce delivery fees may apply.",
+    "Aldi": "Prices may vary from those in store. New York law requires the following disclosure because certain prices and/or fees may vary based on randomized tests, we use personal information (such as delivery address) to calculate fees, and we offer certain personalized incentives: this price was set by an algorithm using your personal data.",
+    "Target": "At Target, we're committed to delivering high-quality products at outstanding value. While regular prices are consistent for all guests shopping at the same store, some items may differ between locations because market conditions vary by store. Guests may also see different prices when they receive personalized savings and offers through Target Circle. To provide these benefits and ensure pricing reflects each store's market, Target uses limited information such as location and shopping history. New York state law requires businesses to display the following disclosure: This price was set by an algorithm using your personal data.",
+}
+
+company_names = list(DISCLOSURES.keys())
+texts = list(DISCLOSURES.values())
+
+vectorizer = TfidfVectorizer()
+tfidf_matrix = vectorizer.fit_transform(texts)
+sim_matrix = cosine_similarity(tfidf_matrix)
+sim_df = pd.DataFrame(sim_matrix, index=company_names, columns=company_names)
+
+print("=" * 65)
+print("  COSINE SIMILARITY MATRIX")
+print("=" * 65)
+print(sim_df.round(3).to_string())
+
+print("\nAll pairs ranked by similarity:")
+pairs = []
+for i in range(len(company_names)):
+    for j in range(i+1, len(company_names)):
+        pairs.append((company_names[i], company_names[j], round(sim_matrix[i][j], 3)))
+pairs.sort(key=lambda x: x[2], reverse=True)
+for a, b, score in pairs:
+    bar = "█" * int(score * 20)
+    print(f"  {a:<15} ↔ {b:<15} {score:.3f} {bar}")
+
+print("\nAverage similarity to all other companies:")
+avg_sim = sim_df.copy()
+np.fill_diagonal(avg_sim.values, np.nan)
+avg_per_company = avg_sim.mean(axis=1).round(3).sort_values(ascending=False)
+for company, score in avg_per_company.items():
+    print(f"  {company:<20} {score}")
+
+fig, ax = plt.subplots(figsize=(8, 6))
+sns.heatmap(
+    sim_df,
+    annot=True,
+    fmt=".2f",
+    cmap="YlOrRd",
+    vmin=0, vmax=1,
+    linewidths=0.5,
+    ax=ax,
+    cbar_kws={"label": "Cosine Similarity (0=different, 1=identical)"}
+)
+ax.set_title("How Similar Are Company Disclosure Statements?\n(1.0 = identical, 0.0 = completely different)",
+             fontweight="bold", fontsize=12)
+plt.xticks(rotation=45, ha="right", fontsize=10)
+plt.yticks(rotation=0, fontsize=10)
+plt.tight_layout()
+plt.savefig("similarity_heatmap.png", dpi=150)
+plt.show()
+
+sim_df.to_csv("similarity_matrix.csv")
+from google.colab import files
+files.download("similarity_matrix.csv")
+files.download("similarity_heatmap.png")
+print("Done!")
